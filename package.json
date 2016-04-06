@@ -1,0 +1,23 @@
+{
+  "name": "deepcrawl",
+  "version": "0.0.1",
+  "description": "A DeepCrawl API wrapper for Node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/L7labs/deepcrawl.git"
+  },
+  "keywords": [
+    "deepcrawl",
+    "node"
+  ],
+  "author": "Kevin Moritz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/L7labs/deepcrawl/issues"
+  },
+  "homepage": "https://github.com/L7labs/deepcrawl#readme"
+}
