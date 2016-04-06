@@ -19,5 +19,11 @@
   "bugs": {
     "url": "https://github.com/L7labs/deepcrawl/issues"
   },
-  "homepage": "https://github.com/L7labs/deepcrawl#readme"
+  "homepage": "https://github.com/L7labs/deepcrawl#readme",
+  "dependencies": {
+    "bluebird": "^3.3.4",
+    "humps": "^1.0.0",
+    "lodash": "^4.8.2",
+    "needle": "^1.0.0"
+  }
 }
