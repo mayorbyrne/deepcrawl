@@ -2,23 +2,23 @@ const DeepCrawl = require('../'),
   should = require('should'),
   sinon = require('sinon-bluebird');
 
-describe('lib/deepcrawl', () => {
+describe('lib/deepcrawl', function () {
 
   it('constructor should fail without apiId', function() {
-    (() => {
+    (function () {
       new DeepCrawl()
     }).should.throw('DeepCrawl called without required arg "apiId"');
   });
 
   it('constructor should fail without apiKey', function() {
-    (() => {
+    (function () {
       new DeepCrawl({
         apiId: '1234'
       })
     }).should.throw('DeepCrawl called without required arg "apiKey"');    
   });
 
-  it('constructor should accept valid options', () => {
+  it('constructor should accept valid options', function () {
     const deepCrawl = new DeepCrawl({
       apiId: '1234',
       accountId: '9999',
