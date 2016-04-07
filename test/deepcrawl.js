@@ -1,3 +1,4 @@
+'use strict';
 const DeepCrawl = require('../'),
   should = require('should'),
   sinon = require('sinon-bluebird');
