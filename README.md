@@ -14,4 +14,14 @@ var deepCrawl = new DeepCrawl({
 });
 
 var API = deepCrawl.getAPI();
+
+API.projects.read({
+  projectId: '4351'
+})
+.then(function(res) {
+  console.log(res);
+})
+.catch(function(err) {
+  console.log(err.stack);
+});
 ```
