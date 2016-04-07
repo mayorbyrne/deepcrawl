@@ -1,0 +1,10 @@
+machine:
+  environment:
+    NODE_ENV: staging
+    CI: true
+  node:
+    version: 5.6
+
+notify:
+  webhooks:
+    - url: http://staging.level7.io:8080/handler
