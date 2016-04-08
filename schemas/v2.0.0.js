@@ -1,7 +1,6 @@
 'use strict';
 module.exports = {
   version: '2.0.0',
-  baseUrl: 'https://prod-1-dc-api-oopeix3r.deepcrawl.com',
   resources: {
     projects: {
       route: '/accounts/{accountId}/projects',
@@ -10,7 +9,7 @@ module.exports = {
       actions: {
         list: 'GET',
         create: {
-          type: 'POST',
+          method: 'POST',
           requiredFields: ['name', 'sitePrimary']
         },
         read: 'GET',

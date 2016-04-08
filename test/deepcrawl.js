@@ -9,8 +9,8 @@ describe('lib/deepcrawl', function () {
     const deepCrawl = new DeepCrawl({
       accountId: '9999',
       getSessionToken: sinon.stub(),
+      baseUrl: 'http://www.unittest.com',
       schema: {
-        baseUrl: 'http://www.unittest.com',
         version: 'testVersion'
       }
     });
