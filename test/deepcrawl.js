@@ -241,7 +241,7 @@ describe('lib/deepcrawl', function () {
             resetNeedle();
             // let's tweak the route on crawls to make sure handling of extra/missing slashes works
             // remove the leading slash and add a trailing one
-            // the tests should pass with an without this line
+            // the tests should pass with or without this line
             schema.resources.crawls.route = 'accounts/{accountId}/projects/{projectId}/crawls/';
             API = deepCrawl.parseSchema(schema);
           });
@@ -316,7 +316,6 @@ describe('lib/deepcrawl', function () {
               deepCrawl.accountId = '9999';
             });
 
-
             it('on success, should return res.body', function (done) {
               deepCrawl.needle.patchAsync.onCall(0).resolves({
                 statusCode: 201,
@@ -337,7 +336,6 @@ describe('lib/deepcrawl', function () {
                   const request = deepCrawl.needle.patchAsync.getCall(0);
                   // should replace {accountId} {projectId} and {crawlId} in the url
                   request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls/someCrawlId');
-                  // the argument should be underscored instead of camelcase
                   request.args[1]['status'].should.equal('crawling');
                   request.args[2].headers['X-Auth-Token'].should.equal('testSessionToken');
                   done();
@@ -405,7 +403,7 @@ describe('lib/deepcrawl', function () {
                   const request = deepCrawl.needle.deleteAsync.getCall(0);
                   // should replace {accountId} {projectId} and {crawlId} in the url
                   request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls/someCrawlId');
-                  // the argument should be underscored instead of camelcase
+                  // the arguments should be underscored instead of camelcase
                   request.args[1]['project_id'].should.equal('someProjectId');
                   request.args[1]['crawl_id'].should.equal('someCrawlId');
                   request.args[2].headers['X-Auth-Token'].should.equal('testSessionToken');
