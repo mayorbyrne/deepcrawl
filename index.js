@@ -4,7 +4,6 @@ const BPromise = require('bluebird'),
   needle = BPromise.promisifyAll(require('needle')),
   humps = require('humps'), // my lovely lady lumps
   _ = require('lodash'),
-  qs = require('querystring'),
   parseUrl = require('url').parse;
 
 class DeepCrawl {
@@ -63,8 +62,6 @@ class DeepCrawl {
         };
 
         if (method === 'get') {
-          // comment out for now
-          // url = `${url}?${qs.encode(options)}`;
           return this.needle.getAsync(url, requestOpts)
             .then(this.handleResponse);
         }

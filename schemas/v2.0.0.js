@@ -107,7 +107,7 @@ module.exports = {
       }
     },
     domainResponses: {
-      route: '/domain_responses',
+      route: '/domain_responses?url={url}',
       requiredFields: ['url'],
       actions: {
         list: 'GET'
