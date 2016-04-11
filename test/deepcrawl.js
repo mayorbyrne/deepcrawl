@@ -13,38 +13,38 @@ let needle = {
   deepCrawl,
   API;
 
-function resetNeedle () {
+function resetNeedle() {
   deepCrawl.needle.getAsync.reset();
   deepCrawl.needle.postAsync.reset();
   deepCrawl.needle.patchAsync.reset();
-  deepCrawl.needle.deleteAsync.reset();  
+  deepCrawl.needle.deleteAsync.reset();
 }
 
-describe('lib/deepcrawl', function() {
+describe('lib/deepcrawl', function () {
 
-  describe('constructor', function() {
-    it('should throw an error if no baseUrl is passed in', function() {
-      (function() {
+  describe('constructor', function () {
+    it('should throw an error if no baseUrl is passed in', function () {
+      (function () {
         deepCrawl = new DeepCrawl()
       }).should.throw('No baseUrl provided');
     });
 
-    it('should throw an error if invalid baseUrl is passed in', function() {
-      (function() {
+    it('should throw an error if invalid baseUrl is passed in', function () {
+      (function () {
         deepCrawl = new DeepCrawl({
           baseUrl: 'helloworld.com'
         })
       }).should.throw('helloworld.com should have a protocol and slashes.');
     });
 
-    it('should strip a trailing slash from the baseUrl', function() {
+    it('should strip a trailing slash from the baseUrl', function () {
       deepCrawl = new DeepCrawl({
         baseUrl: 'http://www.helloworld.com/'
       });
       deepCrawl.baseUrl.should.equal('http://www.helloworld.com');
     });
 
-    it('constructor should accept valid options', function() {
+    it('constructor should accept valid options', function () {
       deepCrawl = new DeepCrawl({
         accountId: '9999',
         getSessionToken: sinon.stub(),
@@ -56,8 +56,8 @@ describe('lib/deepcrawl', function() {
     });
   });
 
-  describe('parseSchema', function() {
-    before(function() {
+  describe('parseSchema', function () {
+    before(function () {
       deepCrawl = new DeepCrawl({
         needle, //overwrite needle lib with custom stubbed lib
         accountId: '9999',
@@ -66,20 +66,20 @@ describe('lib/deepcrawl', function() {
       });
     });
 
-    describe('given schemas/v2.0.0.js', function() {
-      before(function() {
+    describe('given schemas/v2.0.0.js', function () {
+      before(function () {
         API = deepCrawl.parseSchema(schema);
       });
 
-      describe('projects', function() {
-        describe('list projects', function() {
-          it('should require accountId', function() {
+      describe('projects', function () {
+        describe('list projects', function () {
+          it('should require accountId', function () {
             deepCrawl.accountId = null;
             API.projects.list.bind(API).should.throw('accountId is required');
             deepCrawl.accountId = '9999';
           });
 
-          it('on success, should return res.body', function(done) {
+          it('on success, should return res.body', function (done) {
             deepCrawl.needle.getAsync.onCall(0).resolves({
               statusCode: 200,
               body: {
@@ -99,7 +99,7 @@ describe('lib/deepcrawl', function() {
               });
           });
 
-          it('on failure, should catch and handle error', function(done) {
+          it('on failure, should catch and handle error', function (done) {
             deepCrawl.needle.getAsync.onCall(1).resolves({
               statusCode: 404,
               body: {
@@ -115,19 +115,19 @@ describe('lib/deepcrawl', function() {
           });
         });
 
-        describe('create project', function() {
-          it('should require name', function() {
+        describe('create project', function () {
+          it('should require name', function () {
             deepCrawl.accountId = null;
             API.projects.create.bind(API).should.throw('name is required');
           });
 
-          it('should require sitePrimary', function() {
+          it('should require sitePrimary', function () {
             API.projects.create.bind(API, {
               name: 'unitTest'
             }).should.throw('sitePrimary is required');
           });
 
-          it('should require accountId', function() {
+          it('should require accountId', function () {
             API.projects.create.bind(API, {
               name: 'unitTest',
               sitePrimary: 'http://www.unittest.com'
@@ -135,7 +135,7 @@ describe('lib/deepcrawl', function() {
             deepCrawl.accountId = '9999';
           });
 
-          it('on success, should return res.body', function(done) {
+          it('on success, should return res.body', function (done) {
             deepCrawl.needle.postAsync.onCall(0).resolves({
               statusCode: 201,
               body: {
@@ -162,7 +162,7 @@ describe('lib/deepcrawl', function() {
               });
           });
 
-          it('on failure, should catch and handle error', function(done) {
+          it('on failure, should catch and handle error', function (done) {
             deepCrawl.needle.postAsync.onCall(1).resolves({
               statusCode: 409,
               body: ''
@@ -179,16 +179,16 @@ describe('lib/deepcrawl', function() {
           });
         });
 
-        describe('read project', function() {
-          before(function() {
+        describe('read project', function () {
+          before(function () {
             resetNeedle();
           });
 
-          it('should require projectId', function() {
+          it('should require projectId', function () {
             API.projects.read.bind(API).should.throw('projectId is required');
           });
 
-          it('should require accountId', function() {
+          it('should require accountId', function () {
             deepCrawl.accountId = null;
             API.projects.read.bind(API, {
               projectId: 'someProjectId'
@@ -196,7 +196,7 @@ describe('lib/deepcrawl', function() {
             deepCrawl.accountId = '9999';
           });
 
-          it('on success, should return res.body', function(done) {
+          it('on success, should return res.body', function (done) {
             deepCrawl.needle.getAsync.onCall(0).resolves({
               statusCode: 200,
               body: {
@@ -221,7 +221,7 @@ describe('lib/deepcrawl', function() {
               });
           });
 
-          it('on failure, should catch and handle error', function(done) {
+          it('on failure, should catch and handle error', function (done) {
             deepCrawl.needle.getAsync.onCall(1).resolves({
               statusCode: 503,
               body: 'resource unavailable'
@@ -236,8 +236,8 @@ describe('lib/deepcrawl', function() {
               });
           });
         });
-        describe('crawls', function() {
-          before(function() {
+        describe('crawls', function () {
+          before(function () {
             resetNeedle();
             // let's tweak the route on crawls to make sure handling of extra/missing slashes works
             // remove the leading slash and add a trailing one
@@ -245,18 +245,18 @@ describe('lib/deepcrawl', function() {
             schema.resources.crawls.route = 'accounts/{accountId}/projects/{projectId}/crawls/';
             API = deepCrawl.parseSchema(schema);
           });
-          describe('list crawls', function() {
-            it('should require accountId', function() {
+          describe('list crawls', function () {
+            it('should require accountId', function () {
               deepCrawl.accountId = null;
               API.crawls.list.bind(API).should.throw('accountId is required');
               deepCrawl.accountId = '9999';
             });
 
-            it('should require projectId', function() {
+            it('should require projectId', function () {
               API.crawls.list.bind(API).should.throw('projectId is required');
             });
 
-            it('on success, should return res.body', function(done) {
+            it('on success, should return res.body', function (done) {
               deepCrawl.needle.getAsync.onCall(0).resolves({
                 statusCode: 200,
                 body: {
@@ -278,7 +278,7 @@ describe('lib/deepcrawl', function() {
                 });
             });
 
-            it('on failure, should catch and handle error', function(done) {
+            it('on failure, should catch and handle error', function (done) {
               deepCrawl.needle.getAsync.onCall(1).resolves({
                 statusCode: 404,
                 body: {
@@ -296,18 +296,18 @@ describe('lib/deepcrawl', function() {
             });
           });
 
-          describe('update crawl', function() {
-            it('should require crawlId', function() {
+          describe('update crawl', function () {
+            it('should require crawlId', function () {
               API.crawls.update.bind(API).should.throw('crawlId is required');
             });
 
-            it('should require projectId', function() {
+            it('should require projectId', function () {
               API.crawls.update.bind(API, {
                 crawlId: 'someCrawlId'
               }).should.throw('projectId is required');
             });
 
-            it('should require accountId', function() {
+            it('should require accountId', function () {
               deepCrawl.accountId = null;
               API.crawls.update.bind(API, {
                 crawlId: 'someCrawlId',
@@ -317,7 +317,7 @@ describe('lib/deepcrawl', function() {
             });
 
 
-            it('on success, should return res.body', function(done) {
+            it('on success, should return res.body', function (done) {
               deepCrawl.needle.patchAsync.onCall(0).resolves({
                 statusCode: 201,
                 body: {
@@ -344,7 +344,7 @@ describe('lib/deepcrawl', function() {
                 });
             });
 
-            it('on failure, should catch and handle error', function(done) {
+            it('on failure, should catch and handle error', function (done) {
               deepCrawl.needle.patchAsync.onCall(1).resolves({
                 statusCode: 409,
                 body: ''
@@ -362,22 +362,22 @@ describe('lib/deepcrawl', function() {
             });
           });
 
-          describe('delete crawl', function() {
-            before(function() {
+          describe('delete crawl', function () {
+            before(function () {
               resetNeedle();
             });
 
-            it('should require crawlId', function() {
+            it('should require crawlId', function () {
               API.crawls.delete.bind(API).should.throw('crawlId is required');
             });
 
-            it('should require projectId', function() {
+            it('should require projectId', function () {
               API.crawls.delete.bind(API, {
                 crawlId: 'someCrawlId'
               }).should.throw('projectId is required');
             });
 
-            it('should require accountId', function() {
+            it('should require accountId', function () {
               deepCrawl.accountId = null;
               API.crawls.delete.bind(API, {
                 crawlId: 'someCrawlId',
@@ -386,7 +386,7 @@ describe('lib/deepcrawl', function() {
               deepCrawl.accountId = '9999';
             });
 
-            it('on success, should return res.body', function(done) {
+            it('on success, should return res.body', function (done) {
               deepCrawl.needle.deleteAsync.onCall(0).resolves({
                 statusCode: 204,
                 body: {
@@ -406,14 +406,14 @@ describe('lib/deepcrawl', function() {
                   // should replace {accountId} {projectId} and {crawlId} in the url
                   request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls/someCrawlId');
                   // the argument should be underscored instead of camelcase
-                  request.args[1]['project_id'].should.equal('someProjectId');                  
-                  request.args[1]['crawl_id'].should.equal('someCrawlId');                  
+                  request.args[1]['project_id'].should.equal('someProjectId');
+                  request.args[1]['crawl_id'].should.equal('someCrawlId');
                   request.args[2].headers['X-Auth-Token'].should.equal('testSessionToken');
                   done();
                 });
             });
 
-            it('on failure, should catch and handle error', function(done) {
+            it('on failure, should catch and handle error', function (done) {
               deepCrawl.needle.deleteAsync.onCall(1).resolves({
                 statusCode: 503,
                 body: 'resource unavailable'
