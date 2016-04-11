@@ -14,6 +14,7 @@ class DeepCrawl {
     this.apiKey = cfg.apiKey;
     this.getSessionToken = cfg.getSessionToken;
     this.accountId = cfg.accountId;
+    this.needle = cfg.needle || needle;
 
     this.schema = cfg.schema || schema;
     this.version = this.schema.version;
@@ -31,7 +32,7 @@ class DeepCrawl {
       throw new Error('No baseUrl provided');
     }
     if (url[url.length - 1] === '/') {
-      throw new Error(`${url} should not end in a slash.`);
+      url = url.slice(0, url.length - 1);
     }
     const parsedUrl = parseUrl(url);
     if (!parsedUrl.protocol || !parsedUrl.slashes) {
@@ -61,13 +62,13 @@ class DeepCrawl {
         };
 
         if (method === 'get') {
-          return needle.getAsync(url, requestOpts)
+          return this.needle.getAsync(url, requestOpts)
             .then(this.handleResponse);
         }
 
         // convert all camelCased options to _ for deepcrawl
         const data = humps.decamelizeKeys(options);
-        return needle[`${method}Async`](url, data, requestOpts)
+        return this.needle[`${method}Async`](url, data, requestOpts)
           .then(this.handleResponse);
       });
   }
@@ -122,10 +123,10 @@ class DeepCrawl {
    */
   generateResourceUrl (route) {
     if (route[route.length - 1] === '/') {
-      throw new Error(`The route ${route} incorrectly ends with a trailing slash. Routes should only begin with a slash.`);
+      route = route.slice(0, route.length - 1);
     }
     if (route[0] !== '/') {
-      throw new Error(`The route ${route} incorrectly starts without a slash.  Routes should begin with a slash.`);
+      route = `/${route}`;
     }
 
     return this.baseUrl + route;
