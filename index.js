@@ -63,7 +63,8 @@ class DeepCrawl {
         };
 
         if (method === 'get') {
-          url = `${url}?${qs.encode(options)}`;
+          // comment out for now
+          // url = `${url}?${qs.encode(options)}`;
           return this.needle.getAsync(url, requestOpts)
             .then(this.handleResponse);
         }
