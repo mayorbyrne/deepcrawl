@@ -6,19 +6,13 @@ const DeepCrawl = require('../'),
   sinon = require('sinon-bluebird'),
   apiVersion = '2.0.0';
 
-let needle = {
-    getAsync: sinon.stub(),
-    postAsync: sinon.stub(),
-    patchAsync: sinon.stub(),
-    deleteAsync: sinon.stub()
-  },
-  dc;
+let dc;
 
-function resetNeedle() {
-  dc.needle.getAsync.reset();
-  dc.needle.postAsync.reset();
-  dc.needle.patchAsync.reset();
-  dc.needle.deleteAsync.reset();
+function resetRequestLib() {
+  dc.requestLib.getAsync.reset();
+  dc.requestLib.postAsync.reset();
+  dc.requestLib.patchAsync.reset();
+  dc.requestLib.deleteAsync.reset();
 }
 
 describe('lib/deepcrawl', function () {
@@ -98,15 +92,23 @@ describe('lib/deepcrawl', function () {
     before(function () {
       dc = new DeepCrawl({
         apiVersion: apiVersion,
-        needle, //overwrite needle lib with custom stubbed lib
         accountId: '9999',
         getSessionToken: sinon.stub().resolves('testSessionToken'),
         baseUrl: 'http://api.unittest.com'
       });
+
+      // Internally the DeepCrawl class promisifies the request lib's API resulting
+      // in the "xAsync" method names. For the purposes of the unit tests we'll override
+      // these with stub methods to avoid making real API calls. In real code you would
+      // never access these methods directly.
+      dc.requestLib.getAsync = sinon.stub();
+      dc.requestLib.postAsync = sinon.stub();
+      dc.requestLib.patchAsync = sinon.stub();
+      dc.requestLib.deleteAsync = sinon.stub();
     });
 
     describe('projects', function () {
-      describe('list projects', function () {
+      describe('list', function () {
         it('should require accountId', function () {
           var id = dc.accountId;
           delete dc.accountId;
@@ -115,7 +117,7 @@ describe('lib/deepcrawl', function () {
         });
 
         it('on success, should return res.body', function (done) {
-          dc.needle.getAsync.onCall(0).resolves({
+          dc.requestLib.getAsync.onCall(0).resolves({
             statusCode: 200,
             body: {
               test: 'body'
@@ -125,8 +127,8 @@ describe('lib/deepcrawl', function () {
             .then((res) => {
               res.test.should.equal('body');
               // make sure the request arguments are correct
-              dc.needle.getAsync.callCount.should.equal(1);
-              const request = dc.needle.getAsync.getCall(0);
+              dc.requestLib.getAsync.callCount.should.equal(1);
+              const request = dc.requestLib.getAsync.getCall(0);
               // should replace {accountId} in the url
               request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects');
               request.args[1].headers['X-Auth-Token'].should.equal('testSessionToken');
@@ -135,7 +137,7 @@ describe('lib/deepcrawl', function () {
         });
 
         it('on failure, should catch and handle error', function (done) {
-          dc.needle.getAsync.onCall(1).resolves({
+          dc.requestLib.getAsync.onCall(1).resolves({
             statusCode: 404,
             body: {
               test: 'body'
@@ -150,7 +152,7 @@ describe('lib/deepcrawl', function () {
         });
       });
 
-      describe('create project', function () {
+      describe('create', function () {
         it('should require name', function () {
           dc.accountId = null;
           dc.api.projects.create.bind(dc.api).should.throw('name is required');
@@ -171,7 +173,7 @@ describe('lib/deepcrawl', function () {
         });
 
         it('on success, should return res.body', function (done) {
-          dc.needle.postAsync.onCall(0).resolves({
+          dc.requestLib.postAsync.onCall(0).resolves({
             statusCode: 201,
             body: {
               test: 'body',
@@ -185,8 +187,8 @@ describe('lib/deepcrawl', function () {
             .then((res) => {
               res.test.should.equal('body');
               // make sure the request arguments are correct
-              dc.needle.postAsync.callCount.should.equal(1);
-              const request = dc.needle.postAsync.getCall(0);
+              dc.requestLib.postAsync.callCount.should.equal(1);
+              const request = dc.requestLib.postAsync.getCall(0);
               // should replace {accountId} in the url
               request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects');
               request.args[1].name.should.equal('unitTest');
@@ -198,7 +200,7 @@ describe('lib/deepcrawl', function () {
         });
 
         it('on failure, should catch and handle error', function (done) {
-          dc.needle.postAsync.onCall(1).resolves({
+          dc.requestLib.postAsync.onCall(1).resolves({
             statusCode: 409,
             body: ''
           });
@@ -214,9 +216,9 @@ describe('lib/deepcrawl', function () {
         });
       });
 
-      describe('read project', function () {
+      describe('read', function () {
         before(function () {
-          resetNeedle();
+          resetRequestLib();
         });
 
         it('should require projectId', function () {
@@ -232,7 +234,7 @@ describe('lib/deepcrawl', function () {
         });
 
         it('on success, should return res.body', function (done) {
-          dc.needle.getAsync.onCall(0).resolves({
+          dc.requestLib.getAsync.onCall(0).resolves({
             statusCode: 200,
             body: {
               test: 'body',
@@ -247,8 +249,8 @@ describe('lib/deepcrawl', function () {
             .then((res) => {
               res.test.should.equal('body');
               // make sure the request arguments are correct
-              dc.needle.getAsync.callCount.should.equal(1);
-              const request = dc.needle.getAsync.getCall(0);
+              dc.requestLib.getAsync.callCount.should.equal(1);
+              const request = dc.requestLib.getAsync.getCall(0);
               // should replace {accountId} and {projectId} in the url
               request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId');
               request.args[1].headers['X-Auth-Token'].should.equal('testSessionToken');
@@ -257,7 +259,7 @@ describe('lib/deepcrawl', function () {
         });
 
         it('on failure, should catch and handle error', function (done) {
-          dc.needle.getAsync.onCall(1).resolves({
+          dc.requestLib.getAsync.onCall(1).resolves({
             statusCode: 503,
             body: 'resource unavailable'
           });
@@ -271,196 +273,195 @@ describe('lib/deepcrawl', function () {
             });
         });
       });
+    });
 
-      describe('crawls', function () {
+    describe('crawls', function () {
+      before(function () {
+        resetRequestLib();
+        dc.loadSchema(apiVersion);
+      });
+
+      describe('list ', function () {
+        it('should require accountId', function () {
+          dc.accountId = null;
+          dc.api.crawls.list.bind(dc.api).should.throw('accountId is required');
+          dc.accountId = '9999';
+        });
+
+        it('should require projectId', function () {
+          dc.api.crawls.list.bind(dc.api).should.throw('projectId is required');
+        });
+
+        it('on success, should return res.body', function (done) {
+          dc.requestLib.getAsync.onCall(0).resolves({
+            statusCode: 200,
+            body: {
+              test: 'body'
+            }
+          })
+          dc.api.crawls.list({
+              projectId: 'someProjectId'
+            })
+            .then((res) => {
+              res.test.should.equal('body');
+              // make sure the request arguments are correct
+              dc.requestLib.getAsync.callCount.should.equal(1);
+              const request = dc.requestLib.getAsync.getCall(0);
+              // should replace {accountId} and {projectId} in the url
+              request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls');
+              request.args[1].headers['X-Auth-Token'].should.equal('testSessionToken');
+              done();
+            });
+        });
+
+        it('on failure, should catch and handle error', function (done) {
+          dc.requestLib.getAsync.onCall(1).resolves({
+            statusCode: 404,
+            body: {
+              test: 'body'
+            }
+          });
+
+          dc.api.crawls.list({
+              projectId: 'someProjectId'
+            })
+            .catch(err => {
+              err.message.should.equal('The item was not found.  Please check the url and try again.');
+              done();
+            });
+        });
+      });
+
+      describe('update', function () {
+        it('should require crawlId', function () {
+          dc.api.crawls.update.bind(dc.api).should.throw('crawlId is required');
+        });
+
+        it('should require projectId', function () {
+          dc.api.crawls.update.bind(dc.api, {
+            crawlId: 'someCrawlId'
+          }).should.throw('projectId is required');
+        });
+
+        it('should require accountId', function () {
+          dc.accountId = null;
+          dc.api.crawls.update.bind(dc.api, {
+            crawlId: 'someCrawlId',
+            projectId: 'someProjectId'
+          }).should.throw('accountId is required');
+          dc.accountId = '9999';
+        });
+
+        it('on success, should return res.body', function (done) {
+          dc.requestLib.patchAsync.onCall(0).resolves({
+            statusCode: 201,
+            body: {
+              test: 'body',
+              id: 'someCrawlId'
+            }
+          })
+          dc.api.crawls.update({
+              crawlId: 'someCrawlId',
+              projectId: 'someProjectId',
+              status: 'crawling'
+            })
+            .then((res) => {
+              res.id.should.equal('someCrawlId');
+              // make sure the request arguments are correct
+              dc.requestLib.patchAsync.callCount.should.equal(1);
+              const request = dc.requestLib.patchAsync.getCall(0);
+              // should replace {accountId} {projectId} and {crawlId} in the url
+              request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls/someCrawlId');
+              request.args[1]['status'].should.equal('crawling');
+              request.args[2].headers['X-Auth-Token'].should.equal('testSessionToken');
+              done();
+            });
+        });
+
+        it('on failure, should catch and handle error', function (done) {
+          dc.requestLib.patchAsync.onCall(1).resolves({
+            statusCode: 409,
+            body: ''
+          });
+
+          dc.api.crawls.update({
+              crawlId: 'someCrawlId',
+              projectId: 'someProjectId',
+              status: 'crawling'
+            })
+            .catch(err => {
+              err.message.should.equal('The request could not be completed due to a conflict with the current state of the resource');
+              done();
+            });
+        });
+      });
+
+      describe('delete', function () {
         before(function () {
-          resetNeedle();
-          dc.loadSchema(apiVersion);
-        });
-        describe('list crawls', function () {
-          it('should require accountId', function () {
-            dc.accountId = null;
-            dc.api.crawls.list.bind(dc.api).should.throw('accountId is required');
-            dc.accountId = '9999';
-          });
-
-          it('should require projectId', function () {
-            dc.api.crawls.list.bind(dc.api).should.throw('projectId is required');
-          });
-
-          it('on success, should return res.body', function (done) {
-            dc.needle.getAsync.onCall(0).resolves({
-              statusCode: 200,
-              body: {
-                test: 'body'
-              }
-            })
-            dc.api.crawls.list({
-                projectId: 'someProjectId'
-              })
-              .then((res) => {
-                res.test.should.equal('body');
-                // make sure the request arguments are correct
-                dc.needle.getAsync.callCount.should.equal(1);
-                const request = dc.needle.getAsync.getCall(0);
-                // should replace {accountId} and {projectId} in the url
-                request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls');
-                request.args[1].headers['X-Auth-Token'].should.equal('testSessionToken');
-                done();
-              });
-          });
-
-          it('on failure, should catch and handle error', function (done) {
-            dc.needle.getAsync.onCall(1).resolves({
-              statusCode: 404,
-              body: {
-                test: 'body'
-              }
-            });
-
-            dc.api.crawls.list({
-                projectId: 'someProjectId'
-              })
-              .catch(err => {
-                err.message.should.equal('The item was not found.  Please check the url and try again.');
-                done();
-              });
-          });
+          resetRequestLib();
         });
 
-        describe('update crawl', function () {
-          it('should require crawlId', function () {
-            dc.api.crawls.update.bind(dc.api).should.throw('crawlId is required');
-          });
+        it('should require crawlId', function () {
+          dc.api.crawls.delete.bind(dc.api).should.throw('crawlId is required');
+        });
 
-          it('should require projectId', function () {
-            dc.api.crawls.update.bind(dc.api, {
+        it('should require projectId', function () {
+          dc.api.crawls.delete.bind(dc.api, {
+            crawlId: 'someCrawlId'
+          }).should.throw('projectId is required');
+        });
+
+        it('should require accountId', function () {
+          dc.accountId = null;
+          dc.api.crawls.delete.bind(dc.api, {
+            crawlId: 'someCrawlId',
+            projectId: 'someProjectId'
+          }).should.throw('accountId is required');
+          dc.accountId = '9999';
+        });
+
+        it('on success, should return res.body', function (done) {
+          dc.requestLib.deleteAsync.onCall(0).resolves({
+            statusCode: 204,
+            body: {
+              test: 'body',
+              id: 'someCrawlId'
+            }
+          })
+          dc.api.crawls.delete({
+              projectId: 'someProjectId',
               crawlId: 'someCrawlId'
-            }).should.throw('projectId is required');
-          });
-
-          it('should require accountId', function () {
-            dc.accountId = null;
-            dc.api.crawls.update.bind(dc.api, {
-              crawlId: 'someCrawlId',
-              projectId: 'someProjectId'
-            }).should.throw('accountId is required');
-            dc.accountId = '9999';
-          });
-
-          it('on success, should return res.body', function (done) {
-            dc.needle.patchAsync.onCall(0).resolves({
-              statusCode: 201,
-              body: {
-                test: 'body',
-                id: 'someCrawlId'
-              }
             })
-            dc.api.crawls.update({
-                crawlId: 'someCrawlId',
-                projectId: 'someProjectId',
-                status: 'crawling'
-              })
-              .then((res) => {
-                res.id.should.equal('someCrawlId');
-                // make sure the request arguments are correct
-                dc.needle.patchAsync.callCount.should.equal(1);
-                const request = dc.needle.patchAsync.getCall(0);
-                // should replace {accountId} {projectId} and {crawlId} in the url
-                request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls/someCrawlId');
-                request.args[1]['status'].should.equal('crawling');
-                request.args[2].headers['X-Auth-Token'].should.equal('testSessionToken');
-                done();
-              });
-          });
-
-          it('on failure, should catch and handle error', function (done) {
-            dc.needle.patchAsync.onCall(1).resolves({
-              statusCode: 409,
-              body: ''
+            .then((res) => {
+              res.id.should.equal('someCrawlId');
+              // make sure the request arguments are correct
+              dc.requestLib.deleteAsync.callCount.should.equal(1);
+              const request = dc.requestLib.deleteAsync.getCall(0);
+              // should replace {accountId} {projectId} and {crawlId} in the url
+              request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls/someCrawlId');
+              // the arguments should be underscored instead of camelcase
+              request.args[1]['project_id'].should.equal('someProjectId');
+              request.args[1]['crawl_id'].should.equal('someCrawlId');
+              request.args[2].headers['X-Auth-Token'].should.equal('testSessionToken');
+              done();
             });
-
-            dc.api.crawls.update({
-                crawlId: 'someCrawlId',
-                projectId: 'someProjectId',
-                status: 'crawling'
-              })
-              .catch(err => {
-                err.message.should.equal('The request could not be completed due to a conflict with the current state of the resource');
-                done();
-              });
-          });
         });
 
-        describe('delete crawl', function () {
-          before(function () {
-            resetNeedle();
+        it('on failure, should catch and handle error', function (done) {
+          dc.requestLib.deleteAsync.onCall(1).resolves({
+            statusCode: 503,
+            body: 'resource unavailable'
           });
 
-          it('should require crawlId', function () {
-            dc.api.crawls.delete.bind(dc.api).should.throw('crawlId is required');
-          });
-
-          it('should require projectId', function () {
-            dc.api.crawls.delete.bind(dc.api, {
+          dc.api.crawls.delete({
+              projectId: 'someProjectId',
               crawlId: 'someCrawlId'
-            }).should.throw('projectId is required');
-          });
-
-          it('should require accountId', function () {
-            dc.accountId = null;
-            dc.api.crawls.delete.bind(dc.api, {
-              crawlId: 'someCrawlId',
-              projectId: 'someProjectId'
-            }).should.throw('accountId is required');
-            dc.accountId = '9999';
-          });
-
-          it('on success, should return res.body', function (done) {
-            dc.needle.deleteAsync.onCall(0).resolves({
-              statusCode: 204,
-              body: {
-                test: 'body',
-                id: 'someCrawlId'
-              }
             })
-            dc.api.crawls.delete({
-                projectId: 'someProjectId',
-                crawlId: 'someCrawlId'
-              })
-              .then((res) => {
-                res.id.should.equal('someCrawlId');
-                // make sure the request arguments are correct
-                dc.needle.deleteAsync.callCount.should.equal(1);
-                const request = dc.needle.deleteAsync.getCall(0);
-                // should replace {accountId} {projectId} and {crawlId} in the url
-                request.args[0].should.equal('http://api.unittest.com/accounts/9999/projects/someProjectId/crawls/someCrawlId');
-                // the arguments should be underscored instead of camelcase
-                request.args[1]['project_id'].should.equal('someProjectId');
-                request.args[1]['crawl_id'].should.equal('someCrawlId');
-                request.args[2].headers['X-Auth-Token'].should.equal('testSessionToken');
-                done();
-              });
-          });
-
-          it('on failure, should catch and handle error', function (done) {
-            dc.needle.deleteAsync.onCall(1).resolves({
-              statusCode: 503,
-              body: 'resource unavailable'
+            .catch(err => {
+              err.message.should.equal('The resource is not currently available. "resource unavailable"');
+              done();
             });
-
-            dc.api.crawls.delete({
-                projectId: 'someProjectId',
-                crawlId: 'someCrawlId'
-              })
-              .catch(err => {
-                err.message.should.equal('The resource is not currently available. "resource unavailable"');
-                done();
-              });
-          });
-
         });
-
       });
     });
   });

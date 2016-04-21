@@ -1,12 +1,24 @@
 'use strict';
 
 const BPromise = require('bluebird'),
-  needle = BPromise.promisifyAll(require('needle')),
   humps = require('humps'), // my lovely lady lumps
   _ = require('lodash'),
   parseUrl = require('url').parse;
 
 class DeepCrawl {
+  /**
+   * Constructor
+   *
+   * @param {Object} config A configuration options object
+   * @param {String} config.apiVersion The version of the DeepCrawl API/schema to use (required)
+   * @param {String} config.baseUrl The base url for DeepCrawl's REST API (required)
+   * @param {String} [config.apiId]
+   * @param {String} [config.apiKey]
+   * @param {String} [config.getSessionToken]
+   * @param {String} [config.accountId]
+   *
+   * @return {Object} this
+   */
   constructor(cfg) {
     cfg = cfg || {};
 
@@ -19,7 +31,7 @@ class DeepCrawl {
     this.apiKey = cfg.apiKey;
     this.getSessionToken = cfg.getSessionToken;
     this.accountId = cfg.accountId;
-    this.needle = cfg.needle || needle;
+    this.requestLib = BPromise.promisifyAll(cfg.requestLib || require('needle'));
 
     this.schema = require(`./schemas/${cfg.apiVersion}`);
     this.loadSchema(this.schema);
@@ -68,13 +80,13 @@ class DeepCrawl {
         };
 
         if (method === 'get') {
-          return this.needle.getAsync(url, requestOpts)
+          return this.requestLib.getAsync(url, requestOpts)
             .then(this.handleResponse);
         }
 
         // convert all camelCased options to _ for deepcrawl
         const data = humps.decamelizeKeys(options);
-        return this.needle[`${method}Async`](url, data, requestOpts)
+        return this.requestLib[`${method}Async`](url, data, requestOpts)
           .then(this.handleResponse);
       });
   }
