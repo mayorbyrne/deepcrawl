@@ -4,8 +4,7 @@
   "description": "A DeepCrawl API wrapper for Node",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test",
-    "eslint": "eslint index.js"
+    "test": "mocha test"
   },
   "repository": {
     "type": "git",
