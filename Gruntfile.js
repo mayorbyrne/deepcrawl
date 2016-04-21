@@ -1,31 +1,22 @@
 module.exports = function (grunt) {
 
   var jsFiles = [
-      'schemas/**/*.js',
-      'test/**/*.js',
-      '*.js'
-    ];
+    'schemas/**/*.js',
+    'test/**/*.js',
+    '*.js'
+  ];
 
   grunt.initConfig({
-    watch: {
-      scripts: {
-        files: jsFiles,
-        tasks: ['eslint']
-      }
-    },
     eslint: {
       js: {
-        src: jsFiles,
-        options: {
-          configFile: './config/.eslintrc'
-        }
+        src: jsFiles
       }
     },
     jsbeautifier: {
       modify: {
         src: jsFiles,
         options: {
-          config: './config/.jsbeautifyrc'
+          config: './.jsbeautifyrc'
         }
       }
     },
@@ -40,7 +31,6 @@ module.exports = function (grunt) {
   });
 
   grunt.loadNpmTasks('grunt-eslint');
-  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-jsbeautifier');
   grunt.loadNpmTasks('grunt-mocha-test');
 

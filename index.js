@@ -1,4 +1,3 @@
-/*eslint-env es6*/
 'use strict';
 const BPromise = require('bluebird'),
   schema = require('./schemas/v2.0.0'),

@@ -1,7 +1,6 @@
-/*eslint-env es6*/
 'use strict';
+require('should')
 const DeepCrawl = require('../'),
-  should = require('should'),
   sinon = require('sinon-bluebird'),
   schema = require('../schemas/v2.0.0.js');
 

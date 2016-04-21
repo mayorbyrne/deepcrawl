@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "grunt": "^1.0.1",
-    "grunt-contrib-watch": "^1.0.0",
     "grunt-eslint": "^18.1.0",
     "grunt-jsbeautifier": "^0.2.12",
     "grunt-mocha-test": "^0.12.7",
