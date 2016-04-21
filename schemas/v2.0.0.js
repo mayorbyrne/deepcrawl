@@ -53,7 +53,7 @@ module.exports = {
       }
     },
     reports: {
-      route: '/accounts/{accountId}/projects/{projectId}/crawls/{crawlId}/reports',
+      route: '/accounts/{accountId}/projects/{projectId}/crawls/{crawlId}/reports?extend=report_template(name)',
       requiredFields: ['accountId', 'projectId', 'crawlId'],
       id: 'reportId',
       actions: {
