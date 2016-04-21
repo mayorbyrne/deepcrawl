@@ -1,6 +1,6 @@
 'use strict';
+
 const BPromise = require('bluebird'),
-  schema = require('./schemas/v2.0.0'),
   needle = BPromise.promisifyAll(require('needle')),
   humps = require('humps'), // my lovely lady lumps
   _ = require('lodash'),
@@ -10,15 +10,19 @@ class DeepCrawl {
   constructor(cfg) {
     cfg = cfg || {};
 
+    if (!cfg.apiVersion) {
+      throw new Error('You must specify apiVersion');
+    }
+    this.baseUrl = this.verifyUrl(cfg.baseUrl);
+
     this.apiId = cfg.apiId;
     this.apiKey = cfg.apiKey;
     this.getSessionToken = cfg.getSessionToken;
     this.accountId = cfg.accountId;
     this.needle = cfg.needle || needle;
 
-    this.schema = cfg.schema || schema;
+    this.schema = require(`./schemas/${cfg.apiVersion}`);
     this.version = this.schema.version;
-    this.baseUrl = this.verifyUrl(cfg.baseUrl);
   }
 
   /**
@@ -29,7 +33,7 @@ class DeepCrawl {
    */
   verifyUrl(url) {
     if (!url) {
-      throw new Error('No baseUrl provided');
+      throw new Error('You must specify baseUrl');
     }
     if (url[url.length - 1] === '/') {
       url = url.slice(0, url.length - 1);
@@ -135,13 +139,14 @@ class DeepCrawl {
   /**
    * Parses a schema and returns an API
    *
-   * @param {Object} schema
-   * @param {Object} schema.resources
-   * @param {Object} schema.resources.actions
-   *
+   * @param {Object/String} A schema object, or the version of a schema file to load
    */
   parseSchema(schema) {
     const API = {};
+
+    if (typeof schema === 'string') {
+      schema = require(`./schemas/${schema}`);
+    }
     for (const resource in schema.resources) {
       API[resource] = {};
       const resourceUrl = this.generateResourceUrl(schema.resources[resource].route),
@@ -178,12 +183,11 @@ class DeepCrawl {
   }
 
   getAPI() {
-    return this.parseSchema(schema);
+    return this.parseSchema(this.schema);
   }
 
   /**
    * Handle common deepCrawl response codes
-   *
    */
   handleResponse(res) {
     if (String(res.statusCode).startsWith('4') || String(res.statusCode).startsWith('5')) {

@@ -1,8 +1,10 @@
 'use strict';
-require('should')
+
+require('should');
+
 const DeepCrawl = require('../'),
   sinon = require('sinon-bluebird'),
-  schema = require('../schemas/v2.0.0.js');
+  apiVersion = '2.0.0';
 
 let needle = {
     getAsync: sinon.stub(),
@@ -23,15 +25,24 @@ function resetNeedle() {
 describe('lib/deepcrawl', function () {
 
   describe('constructor', function () {
+    it('should throw an error if no apiVersion is passed in', function () {
+      (function () {
+        deepCrawl = new DeepCrawl();
+      }).should.throw('You must specify apiVersion');
+    });
+
     it('should throw an error if no baseUrl is passed in', function () {
       (function () {
-        deepCrawl = new DeepCrawl()
-      }).should.throw('No baseUrl provided');
+        deepCrawl = new DeepCrawl({
+          apiVersion: apiVersion
+        });
+      }).should.throw('You must specify baseUrl');
     });
 
     it('should throw an error if invalid baseUrl is passed in', function () {
       (function () {
         deepCrawl = new DeepCrawl({
+          apiVersion: apiVersion,
           baseUrl: 'helloworld.com'
         })
       }).should.throw('helloworld.com should have a protocol and slashes.');
@@ -39,6 +50,7 @@ describe('lib/deepcrawl', function () {
 
     it('should strip a trailing slash from the baseUrl', function () {
       deepCrawl = new DeepCrawl({
+        apiVersion: apiVersion,
         baseUrl: 'http://www.helloworld.com/'
       });
       deepCrawl.baseUrl.should.equal('http://www.helloworld.com');
@@ -46,6 +58,7 @@ describe('lib/deepcrawl', function () {
 
     it('constructor should accept valid options', function () {
       deepCrawl = new DeepCrawl({
+        apiVersion: apiVersion,
         accountId: '9999',
         getSessionToken: sinon.stub(),
         baseUrl: 'http://www.unittest.com'
@@ -59,6 +72,7 @@ describe('lib/deepcrawl', function () {
   describe('parseSchema', function () {
     before(function () {
       deepCrawl = new DeepCrawl({
+        apiVersion: apiVersion,
         needle, //overwrite needle lib with custom stubbed lib
         accountId: '9999',
         getSessionToken: sinon.stub().resolves('testSessionToken'),
@@ -66,9 +80,9 @@ describe('lib/deepcrawl', function () {
       });
     });
 
-    describe('given schemas/v2.0.0.js', function () {
+    describe('given version ' + apiVersion, function () {
       before(function () {
-        API = deepCrawl.parseSchema(schema);
+        API = deepCrawl.parseSchema(apiVersion);
       });
 
       describe('projects', function () {
@@ -236,14 +250,11 @@ describe('lib/deepcrawl', function () {
               });
           });
         });
+
         describe('crawls', function () {
           before(function () {
             resetNeedle();
-            // let's tweak the route on crawls to make sure handling of extra/missing slashes works
-            // remove the leading slash and add a trailing one
-            // the tests should pass with or without this line
-            schema.resources.crawls.route = 'accounts/{accountId}/projects/{projectId}/crawls/';
-            API = deepCrawl.parseSchema(schema);
+            API = deepCrawl.parseSchema(apiVersion);
           });
           describe('list crawls', function () {
             it('should require accountId', function () {
