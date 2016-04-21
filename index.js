@@ -22,8 +22,6 @@ class DeepCrawl {
     this.needle = cfg.needle || needle;
 
     this.schema = require(`./schemas/${cfg.apiVersion}`);
-    this.version = this.schema.version;
-
     this.loadSchema(this.schema);
 
     return this;
@@ -152,6 +150,9 @@ class DeepCrawl {
     if (typeof schema === 'string') {
       schema = require(`./schemas/${schema}`);
     }
+
+    API.version = schema.version;
+
     for (const resource in schema.resources) {
       API[resource] = {};
       const resourceUrl = this.generateResourceUrl(schema.resources[resource].route),
