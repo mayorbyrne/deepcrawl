@@ -1,3 +1,4 @@
+/*eslint-env es6*/
 'use strict';
 const DeepCrawl = require('../'),
   should = require('should'),
@@ -207,7 +208,7 @@ describe('lib/deepcrawl', function () {
               }
             })
             API.projects.read({
-                projectId: 'someProjectId',
+                projectId: 'someProjectId'
               })
               .then((res) => {
                 res.test.should.equal('body');
@@ -389,7 +390,7 @@ describe('lib/deepcrawl', function () {
                 statusCode: 204,
                 body: {
                   test: 'body',
-                  id: 'someCrawlId',
+                  id: 'someCrawlId'
                 }
               })
               API.crawls.delete({

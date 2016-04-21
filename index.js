@@ -1,3 +1,4 @@
+/*eslint-env es6*/
 'use strict';
 const BPromise = require('bluebird'),
   schema = require('./schemas/v2.0.0'),
@@ -27,7 +28,7 @@ class DeepCrawl {
    *
    * @return {String} url
    */
-  verifyUrl (url) {
+  verifyUrl(url) {
     if (!url) {
       throw new Error('No baseUrl provided');
     }
@@ -50,7 +51,7 @@ class DeepCrawl {
    * @return {Promise}
    *
    */
-  performRequest (url, options, method) {
+  performRequest(url, options, method) {
     // first, get the sessionToken and generate the request options and headers
     return BPromise.resolve(options.sessionToken || this.getSessionToken())
       .then((sessionToken) => {
@@ -84,7 +85,7 @@ class DeepCrawl {
    *
    * @return {Function} The dynamic method call
    */
-  generateMethod (action) {
+  generateMethod(action) {
     action = action || {};
     if (!action.url || !action.method || !action.requiredFields) {
       throw new Error('All actions must have a url, method, and requiredFields.  Make sure all schema ' +
@@ -109,7 +110,7 @@ class DeepCrawl {
           action.url = action.url.replace(`{${field}}`, (options[field] || this[field]));
         }
       });
-      return this.performRequest(action.url, options, action.method);     
+      return this.performRequest(action.url, options, action.method);
     };
   }
 
@@ -121,7 +122,7 @@ class DeepCrawl {
    * @param {String} route The resource route
    * @return {String} complete route url
    */
-  generateResourceUrl (route) {
+  generateResourceUrl(route) {
     if (route[route.length - 1] === '/') {
       route = route.slice(0, route.length - 1);
     }
@@ -140,7 +141,7 @@ class DeepCrawl {
    * @param {Object} schema.resources.actions
    *
    */
-  parseSchema (schema) {
+  parseSchema(schema) {
     const API = {};
     for (const resource in schema.resources) {
       API[resource] = {};
@@ -171,13 +172,13 @@ class DeepCrawl {
           action.requiredFields = [id].concat(action.requiredFields);
           action.url = resourceUrl + `/{${id}}`;
         }
-        API[resource][actionName] = this.generateMethod(action);    
+        API[resource][actionName] = this.generateMethod(action);
       }
     }
     return API;
   }
 
-  getAPI () {
+  getAPI() {
     return this.parseSchema(schema);
   }
 
@@ -185,21 +186,21 @@ class DeepCrawl {
    * Handle common deepCrawl response codes
    *
    */
-  handleResponse (res) {
+  handleResponse(res) {
     if (String(res.statusCode).startsWith('4') || String(res.statusCode).startsWith('5')) {
-      switch(res.statusCode) {
-        case 401:
-          throw new Error('The request is unauthorized.  Please authenticate and try again.');
-        case 404:
-          throw new Error('The item was not found.  Please check the url and try again.');
-        case 409:
-          throw new Error('The request could not be completed due to a conflict with the current state of the resource');
-        case 422:
-          throw new Error(`There was a validation error. ${JSON.stringify(res.body)}`);
-        case 503:
-          throw new Error(`The resource is not currently available. ${JSON.stringify(res.body)}`);
-        default:
-          throw new Error(`There was a ${res.statusCode} error handling the request: ${JSON.stringify(res.body)}`);
+      switch (res.statusCode) {
+      case 401:
+        throw new Error('The request is unauthorized.  Please authenticate and try again.');
+      case 404:
+        throw new Error('The item was not found.  Please check the url and try again.');
+      case 409:
+        throw new Error('The request could not be completed due to a conflict with the current state of the resource');
+      case 422:
+        throw new Error(`There was a validation error. ${JSON.stringify(res.body)}`);
+      case 503:
+        throw new Error(`The resource is not currently available. ${JSON.stringify(res.body)}`);
+      default:
+        throw new Error(`There was a ${res.statusCode} error handling the request: ${JSON.stringify(res.body)}`);
       }
     }
     if (String(res.statusCode).startsWith('2')) {

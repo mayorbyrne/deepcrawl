@@ -4,7 +4,8 @@
   "description": "A DeepCrawl API wrapper for Node",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha test",
+    "eslint": "eslint index.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,11 @@
     "needle": "^1.0.0"
   },
   "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-eslint": "^18.1.0",
+    "grunt-jsbeautifier": "^0.2.12",
+    "grunt-mocha-test": "^0.12.7",
     "mocha": "^2.4.5",
     "should": "^8.3.0",
     "sinon": "^1.17.3",
