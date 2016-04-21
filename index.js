@@ -23,6 +23,10 @@ class DeepCrawl {
 
     this.schema = require(`./schemas/${cfg.apiVersion}`);
     this.version = this.schema.version;
+
+    this.loadSchema(this.schema);
+
+    return this;
   }
 
   /**
@@ -137,11 +141,12 @@ class DeepCrawl {
   }
 
   /**
-   * Parses a schema and returns an API
+   * Loads a new schema and returns the parsed DeepCrawl API. This method also updates the
+   * instance `api` property to use the new schema.
    *
    * @param {Object/String} A schema object, or the version of a schema file to load
    */
-  parseSchema(schema) {
+  loadSchema(schema) {
     const API = {};
 
     if (typeof schema === 'string') {
@@ -179,11 +184,10 @@ class DeepCrawl {
         API[resource][actionName] = this.generateMethod(action);
       }
     }
-    return API;
-  }
 
-  getAPI() {
-    return this.parseSchema(this.schema);
+    this.api = API;
+
+    return API;
   }
 
   /**
