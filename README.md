@@ -1,8 +1,8 @@
 # deepcrawl
 
-[![CircleCI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?maxAge=2592000?style=plastic)](https://circleci.com/gh/L7labs/deepcrawl)
+[![Circle CI](https://img.shields.io/circleci/project/L7labs/deepcrawl.svg)](https://circleci.com/gh/L7labs/deepcrawl)
 [![npm](https://img.shields.io/npm/v/deepcrawl.svg?maxAge=2592000)](https://www.npmjs.com/package/deepcrawl)
-[![npm](https://img.shields.io/npm/dm/deepcrawl.svg?maxAge=2592000?style=plastic)](https://www.npmjs.com/package/deepcrawl)
+[![npm](https://img.shields.io/npm/dm/deepcrawl.svg?maxAge=2592000?style=flat)](https://www.npmjs.com/package/deepcrawl)
 
 A DeepCrawl API wrapper for Node.
 
@@ -15,21 +15,12 @@ The DeepCrawl API requires authentication with an API key and returns a session 
 ```javascript
 var DeepCrawl = require('deepcrawl');
 
-var getSessionToken = function() {
-  //
-}
-
-var deepCrawl = new DeepCrawl({
-  // function (promise or value returning) used to return the session token, wherever it is stored. if this is
-  // missing, and no 'sessionToken' arg is passed to the API calls, they will throw an error
-  getSessionToken: [Function],
-  accountId: '[your account id]', // must be passed here or with each respective call
+var dc = new DeepCrawl({
+  accountId: '[your account id]',
   baseUrl: 'http://api.deepcrawl.com'
 });
 
-var API = deepCrawl.getAPI();
-
-API.projects.read({
+dc.api.projects.read({
   projectId: '4351'
 })
 .then(function(res) {

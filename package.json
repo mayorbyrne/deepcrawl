@@ -1,6 +1,6 @@
 {
   "name": "deepcrawl",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A DeepCrawl API wrapper for Node",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,9 @@
     "node"
   ],
   "author": "Kevin Moritz",
+  "contributors": [
+    "Brian Moeskau"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/L7labs/deepcrawl/issues"
