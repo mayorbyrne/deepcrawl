@@ -219,20 +219,20 @@ class DeepCrawl {
     if (options.apiId) {
       this.apiId = options.apiId;
     }
-    if (options.apiToken) {
-      this.apiToken = options.apiToken;
+    if (options.apiKey) {
+      this.apiKey = options.apiKey;
     }
 
     if (!this.apiId) {
       throw new Error('You must specify a valid apiId');
     }
-    if (!this.apiToken) {
-      throw new Error('You must specify a valid apiToken');
+    if (!this.apiKey) {
+      throw new Error('You must specify a valid apiKey');
     }
 
     return this.requestLib.postAsync(`${this.baseUrl}/sessions`, null, {
         username: this.apiId,
-        password: this.apiToken
+        password: this.apiKey
       })
       .then(response => {
         if (response.statusCode === 201) {

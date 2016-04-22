@@ -106,7 +106,7 @@ describe('lib/deepcrawl', function () {
 
       dc.getSessionToken({
           apiId: '123',
-          apiToken: 'abc'
+          apiKey: 'abc'
         })
         .then((res) => {
           res.should.equal('newSessionToken');
