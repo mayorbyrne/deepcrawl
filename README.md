@@ -8,6 +8,8 @@ A DeepCrawl API wrapper for Node.
 
 *Note that this library only supports DeepCrawl API version 2.0+*
 
+**DeepCrawl 2.0 API is currently in private beta, so this library will not be finalized until the API is released publicly.**
+
 The DeepCrawl API requires authentication with an API key and returns a session token. The session token expires after 6 hours. This module assumes you are refreshing and storing the session token on a regular basis, and have a means of retrieving it.
 
 ```javascript
