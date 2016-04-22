@@ -53,12 +53,11 @@ describe('lib/deepcrawl', function () {
       dc = new DeepCrawl({
         apiVersion: apiVersion,
         accountId: '9999',
-        getSessionToken: sinon.stub(),
+        sessionToken: 'testSessionToken',
         baseUrl: 'http://www.unittest.com'
       });
       dc.accountId.should.equal('9999');
       dc.baseUrl.should.equal('http://www.unittest.com');
-      dc.getSessionToken.callCount.should.equal(0);
     });
   });
 
@@ -67,7 +66,7 @@ describe('lib/deepcrawl', function () {
       let dcCustom = new DeepCrawl({
         apiVersion: apiVersion,
         accountId: '9999',
-        getSessionToken: sinon.stub(),
+        sessionToken: 'testSessionToken',
         baseUrl: 'http://www.foo.com'
       });
 
@@ -93,7 +92,7 @@ describe('lib/deepcrawl', function () {
       dc = new DeepCrawl({
         apiVersion: apiVersion,
         accountId: '9999',
-        getSessionToken: sinon.stub().resolves('testSessionToken'),
+        sessionToken: 'testSessionToken',
         baseUrl: 'http://api.unittest.com'
       });
 

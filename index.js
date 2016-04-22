@@ -14,7 +14,7 @@ class DeepCrawl {
    * @param {String} config.baseUrl The base url for DeepCrawl's REST API (required)
    * @param {String} [config.apiId]
    * @param {String} [config.apiKey]
-   * @param {String} [config.getSessionToken]
+   * @param {String} [config.sessionToken]
    * @param {String} [config.accountId]
    *
    * @return {Object} this
@@ -29,7 +29,7 @@ class DeepCrawl {
 
     this.apiId = cfg.apiId;
     this.apiKey = cfg.apiKey;
-    this.getSessionToken = cfg.getSessionToken;
+    this.sessionToken = cfg.sessionToken;
     this.accountId = cfg.accountId;
     this.requestLib = BPromise.promisifyAll(cfg.requestLib || require('needle'));
 
@@ -65,30 +65,27 @@ class DeepCrawl {
    * @param {String} url
    * @param {Object} options
    * @param {String} method ('get', 'post', etc)
-   * @return {Promise}
    *
+   * @return {Promise}
    */
   performRequest(url, options, method) {
-    // first, get the sessionToken and generate the request options and headers
-    return BPromise.resolve(options.sessionToken || this.getSessionToken())
-      .then((sessionToken) => {
-        const requestOpts = {
-          json: true,
-          headers: {
-            'X-Auth-Token': sessionToken
-          }
-        };
+    const requestOpts = {
+      json: true,
+      headers: {
+        'X-Auth-Token': options.sessionToken
+      }
+    };
 
-        if (method === 'get') {
-          return this.requestLib.getAsync(url, requestOpts)
-            .then(this.handleResponse);
-        }
+    if (method === 'get') {
+      return this.requestLib.getAsync(url, requestOpts)
+        .then(this.handleResponse);
+    }
 
-        // convert all camelCased options to _ for deepcrawl
-        const data = humps.decamelizeKeys(options);
-        return this.requestLib[`${method}Async`](url, data, requestOpts)
-          .then(this.handleResponse);
-      });
+    // convert all camelCased options to _ for deepcrawl
+    const data = humps.decamelizeKeys(options);
+
+    return this.requestLib[`${method}Async`](url, data, requestOpts)
+      .then(this.handleResponse);
   }
 
   /**
@@ -103,26 +100,30 @@ class DeepCrawl {
    * @return {Function} The dynamic method call
    */
   generateMethod(action) {
+    const self = this;
+
     action = action || {};
+
     if (!action.url || !action.method || !action.requiredFields) {
-      throw new Error('All actions must have a url, method, and requiredFields.  Make sure all schema ' +
+      throw new Error('All actions must have a url, method, and requiredFields. Make sure all schema ' +
         'actions are either a string with the method ("GET", "POST", etc.) or an object with "method" ' +
         'and "requiredFields" fields.');
     }
-    // returning this function as a closure here is the key
-    // to constructing this as a dynamic method call
+
+    // Returning this function as a closure is the key to constructing it as a dynamic method call:
     return (options) => {
       options = options || {};
-      if (!options.sessionToken && !this.getSessionToken) {
-        throw new Error(`"sessionToken" or "getSessionToken" method required`);
-      }
 
+      options.sessionToken = options.sessionToken || self.sessionToken;
+
+      if (!options.sessionToken) {
+        throw new Error('You must pass a valid sessionToken to this method, or to the DeepCrawl constructor');
+      }
       action.requiredFields.forEach((field) => {
         if (!options[field] && !this[field]) {
           throw new Error(`${field} is required`);
         }
-        // if the url contains {field}, replace {field} with the passed
-        // in value
+        // if the url contains {field}, replace {field} with the passed value
         if (action.url.indexOf(`{${field}}`) > -1) {
           action.url = action.url.replace(`{${field}}`, (options[field] || this[field]));
         }
@@ -137,6 +138,7 @@ class DeepCrawl {
    * baseUrl and returns the value.
    *
    * @param {String} route The resource route
+   *
    * @return {String} complete route url
    */
   generateResourceUrl(route) {
@@ -155,6 +157,8 @@ class DeepCrawl {
    * instance `api` property to use the new schema.
    *
    * @param {Object/String} A schema object, or the version of a schema file to load
+   *
+   * @return {Object} The API object
    */
   loadSchema(schema) {
     const API = {};
