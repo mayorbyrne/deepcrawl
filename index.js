@@ -100,8 +100,6 @@ class DeepCrawl {
    * @return {Function} The dynamic method call
    */
   generateMethod(action) {
-    const self = this;
-
     action = action || {};
 
     if (!action.url || !action.method || !action.requiredFields) {
@@ -114,7 +112,7 @@ class DeepCrawl {
     return (options) => {
       options = options || {};
 
-      options.sessionToken = options.sessionToken || self.sessionToken;
+      options.sessionToken = options.sessionToken || this.sessionToken;
 
       if (!options.sessionToken) {
         throw new Error('You must pass a valid sessionToken to this method, or to the DeepCrawl constructor');
@@ -205,6 +203,44 @@ class DeepCrawl {
     this.api = API;
 
     return API;
+  }
+
+  /**
+   * Retrieve a fresh session token from the DeepCrawl API (valid for 6 hours). The token will
+   * be persisted as an instance property of this class and reused automatically. However if it
+   * expires later, calls to the API will throw an error, so you'll probably want to implement
+   * your own logic to store the token timeout and call this method on a regular basis to avoid errors.
+   *
+   * @return {Promise} A promise that resolves with the new session token
+   */
+  getSessionToken(options) {
+    options = options || {};
+
+    if (options.apiId) {
+      this.apiId = options.apiId;
+    }
+    if (options.apiToken) {
+      this.apiToken = options.apiToken;
+    }
+
+    if (!this.apiId) {
+      throw new Error('You must specify a valid apiId');
+    }
+    if (!this.apiToken) {
+      throw new Error('You must specify a valid apiToken');
+    }
+
+    return this.requestLib.postAsync(`${this.baseUrl}/sessions`, null, {
+        username: this.apiId,
+        password: this.apiToken
+      })
+      .then(response => {
+        if (response.statusCode === 201) {
+          this.sessionToken = response.body.token;
+          return this.sessionToken;
+        }
+        throw new Error(`Invalid response getting a session token (status ${response.statusCode}): ${JSON.stringify(response.body)}`);
+      });
   }
 
   /**

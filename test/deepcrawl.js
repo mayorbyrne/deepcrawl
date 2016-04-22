@@ -63,14 +63,14 @@ describe('lib/deepcrawl', function () {
 
   describe('loadSchema()', function () {
     it('should load a custom schema correctly', function () {
-      let dcCustom = new DeepCrawl({
+      dc = new DeepCrawl({
         apiVersion: apiVersion,
         accountId: '9999',
         sessionToken: 'testSessionToken',
         baseUrl: 'http://www.foo.com'
       });
 
-      dcCustom.loadSchema({
+      dc.loadSchema({
         version: '1.2.3',
         resources: {
           foo: {
@@ -82,8 +82,37 @@ describe('lib/deepcrawl', function () {
         }
       });
 
-      dcCustom.api.version.should.equal('1.2.3');
-      (typeof dcCustom.api.foo.list).should.equal('function');
+      dc.api.version.should.equal('1.2.3');
+      (typeof dc.api.foo.list).should.equal('function');
+    });
+  });
+
+  describe('getSessionToken()', function () {
+    it('should call the sessions endpoint and return a new token', function (done) {
+      dc = new DeepCrawl({
+        apiVersion: apiVersion,
+        accountId: '9999',
+        sessionToken: 'testSessionToken',
+        baseUrl: 'http://www.unittest.com'
+      });
+
+      dc.requestLib.postAsync = sinon.stub();
+      dc.requestLib.postAsync.onCall(0).resolves({
+        statusCode: 201,
+        body: {
+          token: 'newSessionToken'
+        }
+      });
+
+      dc.getSessionToken({
+          apiId: '123',
+          apiToken: 'abc'
+        })
+        .then((res) => {
+          res.should.equal('newSessionToken');
+          delete dc.requestLib.postAsync;
+          done();
+        });
     });
   });
 
@@ -121,7 +150,7 @@ describe('lib/deepcrawl', function () {
             body: {
               test: 'body'
             }
-          })
+          });
           dc.api.projects.list()
             .then((res) => {
               res.test.should.equal('body');
@@ -178,7 +207,7 @@ describe('lib/deepcrawl', function () {
               test: 'body',
               id: 'someProjectId'
             }
-          })
+          });
           dc.api.projects.create({
               name: 'unitTest',
               sitePrimary: 'http://www.unittest.com'
@@ -241,7 +270,7 @@ describe('lib/deepcrawl', function () {
               name: 'unitTest',
               sitePrimary: 'http://www.unittest.com'
             }
-          })
+          });
           dc.api.projects.read({
               projectId: 'someProjectId'
             })
@@ -262,7 +291,6 @@ describe('lib/deepcrawl', function () {
             statusCode: 503,
             body: 'resource unavailable'
           });
-
           dc.api.projects.read({
               projectId: 'someProjectId'
             })
@@ -297,7 +325,7 @@ describe('lib/deepcrawl', function () {
             body: {
               test: 'body'
             }
-          })
+          });
           dc.api.crawls.list({
               projectId: 'someProjectId'
             })
@@ -320,7 +348,6 @@ describe('lib/deepcrawl', function () {
               test: 'body'
             }
           });
-
           dc.api.crawls.list({
               projectId: 'someProjectId'
             })
@@ -358,7 +385,7 @@ describe('lib/deepcrawl', function () {
               test: 'body',
               id: 'someCrawlId'
             }
-          })
+          });
           dc.api.crawls.update({
               crawlId: 'someCrawlId',
               projectId: 'someProjectId',
@@ -382,7 +409,6 @@ describe('lib/deepcrawl', function () {
             statusCode: 409,
             body: ''
           });
-
           dc.api.crawls.update({
               crawlId: 'someCrawlId',
               projectId: 'someProjectId',
@@ -426,7 +452,7 @@ describe('lib/deepcrawl', function () {
               test: 'body',
               id: 'someCrawlId'
             }
-          })
+          });
           dc.api.crawls.delete({
               projectId: 'someProjectId',
               crawlId: 'someCrawlId'
