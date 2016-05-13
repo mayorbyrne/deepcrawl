@@ -90,6 +90,13 @@ module.exports = {
         read: 'GET'
       }
     },
+    storedHtmlUrls: {
+      route: '/accounts/{accountId}/projects/{projectId}/crawls/{crawlId}/stored_html_urls',
+      requiredFields: ['accountId', 'projectId', 'crawlId'],
+      actions: {
+        list: 'GET'
+      }
+    },
     locations: {
       route: '/locations',
       id: 'locationCode',

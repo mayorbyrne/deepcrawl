@@ -193,6 +193,9 @@ class DeepCrawl {
         // We will append the id field to the required fields for the action, and
         // add /{id} to the url, which will be replaced later in generateMethod
         if (actionName.match(/read|update|delete/i)) {
+          if (!id) {
+            throw new Error(`${resource} (${actionName}) requires an id field, but none was provided in the schema.`);
+          }
           action.requiredFields = [id].concat(action.requiredFields);
           action.url = resourceUrl + `/{${id}}`;
         }
