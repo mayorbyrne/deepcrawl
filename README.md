@@ -30,3 +30,6 @@ dc.api.projects.read({
   console.log(err.stack);
 });
 ```
+
+##Pagination
+All GET calls accept the options "resultsPerPage" and "page", for pagination purposes. The defaults are 50 and 1, respectively. The paging is 1-based.
