@@ -32,6 +32,7 @@ class DeepCrawl {
     this.sessionToken = cfg.sessionToken;
     this.accountId = cfg.accountId;
     this.requestLib = BPromise.promisifyAll(cfg.requestLib || require('needle'));
+    this.resultsPerPage = cfg.resultsPerPage || 50;
 
     this.schema = require(`./schemas/${cfg.apiVersion}`);
     this.loadSchema(this.schema);
@@ -59,6 +60,13 @@ class DeepCrawl {
     return url;
   }
 
+  generatePagedUrl (options, url) {
+    options = options || {};
+    options.resultsPerPage = options.resultsPerPage || this.resultsPerPage;
+    options.page = options.page || 1;
+    return `${url}?per_page=${options.resultsPerPage}&page=${options.page}`;
+  }
+
   /**
    * Performs the actual request to the DeepCrawl API.
    *
@@ -77,6 +85,9 @@ class DeepCrawl {
     };
 
     if (method === 'get') {
+      if (options.page) {
+        url = this.generatePagedUrl(options, url);
+      }
       return this.requestLib.getAsync(url, requestOpts)
         .then(this.handleResponse);
     }
@@ -193,6 +204,9 @@ class DeepCrawl {
         // We will append the id field to the required fields for the action, and
         // add /{id} to the url, which will be replaced later in generateMethod
         if (actionName.match(/read|update|delete/i)) {
+          if (!id) {
+            throw new Error(`${resource} (${actionName}) requires an id field, but none was provided in the schema.`);
+          }
           action.requiredFields = [id].concat(action.requiredFields);
           action.url = resourceUrl + `/{${id}}`;
         }
