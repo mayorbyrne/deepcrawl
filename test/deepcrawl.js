@@ -116,6 +116,34 @@ describe('lib/deepcrawl', function () {
     });
   });
 
+  describe('generatePagedUrl', function () {
+    dc = new DeepCrawl({
+      apiVersion,
+      accountId: '9999',
+      sessionToken: 'testSessionToken',
+      baseUrl: 'http://www.unittest.com'
+    });
+    it('given page and resultsPerPage, should return correctly formatted url', function () {
+      const output = dc.generatePagedUrl({
+        page: 5,
+        resultsPerPage: 10
+      }, 'http://www.sometesturl.com');
+      output.should.equal('http://www.sometesturl.com?per_page=10&page=5');
+    });
+    it('given only page, should return correctly formatted url with default perPage', function () {
+      const output = dc.generatePagedUrl({
+        page: 5
+      }, 'http://www.sometesturl.com');
+      output.should.equal('http://www.sometesturl.com?per_page=50&page=5');
+    });
+    it('given page 0, should return correctly formatted url with page 1', function () {
+      const output = dc.generatePagedUrl({
+        page: 0
+      }, 'http://www.sometesturl.com');
+      output.should.equal('http://www.sometesturl.com?per_page=50&page=1');
+    });
+  });
+
   describe('schema version ' + apiVersion, function () {
     before(function () {
       dc = new DeepCrawl({
